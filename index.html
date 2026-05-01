@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Inventory Scanner</title>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+</head>
+<body>
+  <h2>Scan Part</h2>
+  <button onclick="setMode('add')">Add</button>
+  <button onclick="setMode('remove')">Remove</button>
+
+  <div id="reader" style="width:300px;"></div>
+
+  <p id="status"></p>
+
+  <script>
+    let mode = "remove"; // default
+
+    function setMode(newMode) {
+      mode = newMode;
+      document.getElementById("status").innerText = "Mode: " + mode;
+    }
+
+    function onScanSuccess(decodedText) {
+      document.getElementById("status").innerText = 
+        "Scanned: " + decodedText + " (" + mode + ")";
+
+      fetch("https://script.google.com/a/macros/portledge.org/s/AKfycbxFNlLDoUKBJmaojuW5u6eL3AQBd2Ke6_QPk7evp34nV4d0ayjQKGbuVKVGDTs1538s/exec", {
+        method: "POST",
+        body: JSON.stringify({
+          partId: decodedText,
+          action: mode
+        })
+      })
+      .then(res => res.text())
+      .then(data => console.log(data))
+      .catch(err => console.error(err));
+    }
+
+    new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 })
+      .render(onScanSuccess);
+  </script>
+</body>
+</html>
